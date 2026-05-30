@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Clicker Pro NEO</title>
+    <style>
+        :root {
+            --bg-color: #080710;
+            --card-bg: rgba(255, 255, 255, 0.06);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --accent-glow: rgba(0, 242, 254, 0.5);
+            --gold-color: #ffd700;
+            --text-color: #ffffff;
+            --text-secondary: #a0a0b8;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(100px);
+            opacity: 0.4;
+        }
+        body::before {
+            background: #ff007f;
+            top: -10%;
+            left: -10%;
+        }
+        body::after {
+            background: #00f2fe;
+            bottom: -10%;
+            right: -10%;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 30px;
+            box-shadow: 0 25px 45 rgba(0,0,0,0.7);
+            border: 1px solid var(--card-border);
+            text-align: center;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .header h2 {
+            margin: 0 0 15px 0;
+            font-size: 24px;
+            background: linear-gradient(45deg, #00f2fe, #ff007f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-container {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+            padding: 15px;
+            border-radius: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        #balance {
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--gold-color);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            margin-bottom: 5px;
+        }
+
+        #pfs {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .energy-container {
+            margin-bottom: 25px;
+            text-align: left;
+            padding: 0 5px;
+        }
+        .energy-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #ff007f;
+            font-weight: 600;
+        }
+        .energy-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .energy-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ff007f, #ff7675);
+            border-radius: 10px;
+            transition: width 0.1s ease;
+        }
+
+        .clicker-box {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .coin-btn {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #252440 0%, #111026 100%);
+            border: 4px solid rgba(0, 242, 254, 0.25);
+            box-shadow: 0 0 30px rgba(0, 242, 254, 0.1);
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.05s ease, border-color 0.2s, opacity 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 75px;
+            color: #ffffff;
+        }
+
+        .coin-btn:active:not(:disabled) {
+            transform: scale(0.95);
+            border-color: #00f2fe;
+            box-shadow: 0 0 40px var(--accent-glow);
+        }
+
+        .coin-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: #ff007f !important;
+            box-shadow: inset 0 0 20px rgba(255, 0, 127, 0.2) !important;
+            font-size: 28px;
+            font-weight: 700;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        h3 {
+            text-align: left;
+            font-size: 16px;
+            margin: 0 0 10px 0;
+            padding-left: 5px;
+            color: var(--text-secondary);
+        }
+
+        .shop {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .shop::-webkit-scrollbar {
+            width: 4px;
+        }
+        .shop::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .upgrade-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--card-border);
+            transition: background 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+
+        .upgrade-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(2px);
+        }
+
+        .upgrade-info {
+            text-align: left;
+        }
+
+        .upgrade-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .upgrade-effect {
+            font-size: 11px;
+            color: #00f2fe;
+        }
+
+        .upgrade-cost {
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            color: #000000;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.2);
+        }
+
+        .save-status {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 15px;
+            opacity: 0.6;
+        }
+        
+        .reset-btn {
+            background: none;
+            border: none;
+            color: #ff4757;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 8px;
+            text-decoration: underline;
+            opacity: 0.5;
+        }
+        .reset-btn:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div class="header">
+            <h2>Hamster 2.0 (Balanced Pro)</h2>
+        </div>
+
+        <div class="stats-container">
+            <div id="balance">0 🪙</div>
+            <div id="pfs">Прибыль в секунду: +0</div>
+        </div>
+
+        <div class="energy-container">
+            <div class="energy-text">
+                <span>⚡ Запас энергии</span>
+                <span id="energyVal">50 / 50</span>
+            </div>
+            <div class="energy-bar-bg">
+                <div class="energy-bar-fill" id="energyFill"></div>
+            </div>
+        </div>
+
+        <div class="clicker-box">
+            <button class="coin-btn" id="clickBtn">🐹</button>
+        </div>
+
+        <h3>Улучшения</h3>
+        <div class="shop">
+            
+            <div class="upgrade-card" onclick="buyUpgrade('click', 1)">
+                <div class="upgrade-info">
+                    <div class="upgrade-name">Мощный тап</div>
+                    <div class="upgrade-effect" id="click-count">Куплено: 0 (+1 к клику)</div>
+                </div>
+                <div class="upgrade-cost" id="click-cost">15 🪙</div>
+            </div>
+
+            <div class="upgrade-card" onclick="buyUpgrade('passive1', 1)">
+                <div class="upgrade-info">
+                    <div class="upgrade-name">Авто-кликер</div>
+                    <div class="upgrade-effect" id="passive1-count">Куплено: 0 (+1/сек)</div>
+                </div>
+                <div class="upgrade-cost" id="passive1-cost">40 🪙</div>
+            </div>
+
+            <div class="upgrade-card" onclick="buyUpgrade('passive2', 5)">
+                <div class="upgrade-info">
+                    <div class="upgrade-name">Крипто-ферма</div>
+                    <div class="upgrade-effect" id="passive2-count">Куплено: 0 (+5/сек)</div>
+                </div>
+                <div class="upgrade-cost" id="passive2-cost">200 🪙</div>
+            </div>
+
+            <div class="upgrade-card" onclick="buyUpgrade('energyLimit', 10)">
+                <div class="upgrade-info">
+                    <div class="upgrade-name">Объем батареи</div>
+                    <div class="upgrade-effect" id="energyLimit-count">Куплено: 0 (+10 энергии)</div>
+                </div>
+                <div class="upgrade-cost" id="energyLimit-cost">60 🪙</div>
+            </div>
+
+        </div>
+
+        <div class="save-status" id="saveStatus">Загрузка синхронизации...</div>
+        <button class="reset-btn" onclick="resetGame()">Сбросить всё</button>
+    </div>
+
+    <script>
+        // Измененные базовые цены и коэффициенты для идеального баланса
+        let gameState = {
+            coins: 0,
+            clickPower: 1,
+            passiveIncome: 0,
+            currentEnergy: 50,
+            maxEnergy: 50,
+            cooldownSeconds: 0, 
+            upgrades: {
+                click: { count: 0, baseCost: 15, costMultiplier: 1.35 },
+                passive1: { count: 0, baseCost: 40, costMultiplier: 1.28 },
+                passive2: { count: 0, baseCost: 200, costMultiplier: 1.3 },
+                energyLimit: { count: 0, baseCost: 60, costMultiplier: 1.25 }
+            }
+        };
+
+        const balanceEl = document.getElementById('balance');
+        const pfsEl = document.getElementById('pfs');
+        const clickBtn = document.getElementById('clickBtn');
+        const saveStatusEl = document.getElementById('saveStatus');
+        const energyValEl = document.getElementById('energyVal');
+        const energyFillEl = document.getElementById('energyFill');
+
+        function loadGame() {
+            const savedData = localStorage.getItem('cryptoClickerPro_save_v5_balanced');
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    if (parsed && typeof parsed.coins === 'number') {
+                        gameState.coins = parsed.coins;
+                        gameState.clickPower = parsed.clickPower || 1;
+                        gameState.passiveIncome = parsed.passiveIncome || 0;
+                        gameState.maxEnergy = parsed.maxEnergy || 50;
+                        gameState.currentEnergy = typeof parsed.currentEnergy === 'number' ? parsed.currentEnergy : gameState.maxEnergy;
+                        gameState.cooldownSeconds = parsed.cooldownSeconds || 0;
+                        
+                        for (let type in parsed.upgrades) {
+                            if (gameState.upgrades[type]) {
+                                gameState.upgrades[type].count = parsed.upgrades[type].count || 0;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+            updateUI();
+            saveStatusEl.innerText = "Баланс синхронизирован";
+        }
+
+        function saveGame() {
+            localStorage.setItem('cryptoClickerPro_save_v5_balanced', JSON.stringify(gameState));
+        }
+
+        function resetGame() {
+            if (confirm("Вы действительно хотите полностью сбросить весь сбалансированный аккаунт?")) {
+                localStorage.removeItem('cryptoClickerPro_save_v5_balanced');
+                location.reload();
+            }
+        }
+
+        function getCost(upgrade) {
+            return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, upgrade.count));
+        }
+
+        clickBtn.addEventListener('click', () => {
+            if (gameState.cooldownSeconds > 0 || gameState.currentEnergy <= 0) return;
+
+            gameState.coins += gameState.clickPower;
+            gameState.currentEnergy--;
+
+            if (gameState.currentEnergy <= 0) {
+                gameState.currentEnergy = 0;
+                gameState.cooldownSeconds = 900; // 15 минут восстановления (более сбалансировано)
+            }
+
+            updateUI();
+            saveGame();
+        });
+
+        function buyUpgrade(type, effect) {
+            let upgrade = gameState.upgrades[type];
+            let currentCost = getCost(upgrade);
+
+            if (gameState.coins >= currentCost) {
+                gameState.coins -= currentCost;
+                upgrade.count++;
+
+                if (type === 'click') {
+                    gameState.clickPower += effect;
+                } else if (type === 'energyLimit') {
+                    gameState.maxEnergy += effect;
+                    if (gameState.cooldownSeconds === 0) {
+                        gameState.currentEnergy += effect;
+                    }
+                } else {
+                    gameState.passiveIncome += effect;
+                }
+
+                updateUI();
+                saveGame();
+            } else {
+                alert('Недостаточно монет! 🪙');
+            }
+        }
+
+        function formatTime(seconds) {
+            let m = Math.floor(seconds / 60);
+            let s = seconds % 60;
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function updateUI() {
+            balanceEl.innerText = `${Math.floor(gameState.coins)} 🪙`;
+            pfsEl.innerText = `Прибыль в секунду: +${gameState.passiveIncome}`;
+            energyValEl.innerText = `${gameState.currentEnergy} / ${gameState.maxEnergy}`;
+            
+            let pct = (gameState.currentEnergy / gameState.maxEnergy) * 100;
+            energyFillEl.style.width = `${pct}%`;
+
+            if (gameState.cooldownSeconds > 0) {
+                clickBtn.disabled = true;
+                clickBtn.innerText = formatTime(gameState.cooldownSeconds);
+                energyFillEl.style.background = "#555"; 
+            } else {
+                clickBtn.disabled = false;
+                clickBtn.innerText = "🐹";
+                energyFillEl.style.background = "linear-gradient(90deg, #ff007f, #ff7675)";
+            }
+
+            for (let type in gameState.upgrades) {
+                let upg = gameState.upgrades[type];
+                document.getElementById(`${type}-cost`).innerText = `${getCost(upg)} 🪙`;
+                
+                let label = "";
+                if (type === 'click') label = `(+1 к клику)`;
+                else if (type === 'energyLimit') label = `(+10 макс. энергии)`;
+                else label = `(+${type === 'passive1' ? 1 : 5}/сек)`;
+
+                document.getElementById(`${type}-count`).innerText = `Куплено: ${upg.count} ${label}`;
+            }
+        }
+
+        setInterval(() => {
+            let needSave = false;
+
+            if (gameState.passiveIncome > 0) {
+                gameState.coins += gameState.passiveIncome;
+                needSave = true;
+            }
+
+            if (gameState.cooldownSeconds > 0) {
+                gameState.cooldownSeconds--;
+                if (gameState.cooldownSeconds <= 0) {
+                    gameState.cooldownSeconds = 0;
+                    gameState.currentEnergy = gameState.maxEnergy;
+                }
+                needSave = true;
+            }
+
+            updateUI();
+            if (needSave) saveGame();
+        }, 1000);
+
+        window.addEventListener('beforeunload', saveGame);
+        window.addEventListener('pagehide', saveGame);
+
+        loadGame();
+    </script>
+</body>
+</html>
